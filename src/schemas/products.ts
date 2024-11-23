@@ -6,3 +6,5 @@ export const CreateProductsSchema = z.object({
 	price: z.number(),
 	tags: z.array(z.string().nullable()),
 })
+
+
