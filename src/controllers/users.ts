@@ -1,10 +1,10 @@
 
-import { Address } from "@prisma/client";
+import { Address, User } from "@prisma/client";
 import { Request, Response } from "express";
 import { prismaClient } from '..';
 import { BadRequestsException, NotFoundException } from '../exceptions/internal-exception';
 import { ErrorCode } from '../exceptions/root';
-import { AddressSchema, UpdateUserSchema } from '../schemas/users';
+import { AddressSchema, ChangeRoleSchema, UpdateUserSchema } from '../schemas/users';
 
 export const addAddress = async (req: Request, res: Response) => {
 	AddressSchema.parse(req.body);
@@ -63,11 +63,48 @@ export const updateUser = async (req: Request, res: Response) => {
 			throw new NotFoundException("Address not found!", ErrorCode.ADDRESS_NOT_FOUND);
 		}
 		if (billingAddress.userId !== req.user?.id)
-			throw new BadRequestsException("Address not belong to the user", ErrorCode.ADDRESS_NOT_BELONG);
+			throw new BadRequestsException("Address not belong to the user!", ErrorCode.ADDRESS_NOT_BELONG);
 	}
 	const user = await prismaClient.user.update({
 		where: { id: req.user?.id },
 		data: validateData
 	})
+	res.json(user);
+}
+
+export const listUsers = async (req: Request, res: Response) => {
+	const count = await prismaClient.user.count()
+	const users = await prismaClient.user.findMany({
+		skip: +req.query.skip! || 0,
+		take: +req.query.take! || count
+	});
+	res.json({ count, users })
+}
+
+
+export const getUserById = async (req: Request, res: Response) => {
+	let user: User;
+	try {
+		user = await prismaClient.user.findFirstOrThrow({
+			where: { id: +req.params.id },
+			include: { addresses: true }
+		});
+	} catch (error) {
+		throw new NotFoundException("User not found!", ErrorCode.USER_NOT_FOUND);
+	}
+	res.json(user);
+}
+
+export const changeUserRole = async (req: Request, res: Response) => {
+	let validateData = ChangeRoleSchema.parse(req.body);
+	let user: User;
+	try {
+		user = await prismaClient.user.update({
+			where: { id: +req.params.id },
+			data: { role: validateData.role }
+		});
+	} catch (error) {
+		throw new NotFoundException("User not found!", ErrorCode.USER_NOT_FOUND);
+	}
 	res.json(user);
 }
