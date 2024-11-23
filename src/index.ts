@@ -11,7 +11,7 @@ export const prismaClient = new PrismaClient({
 	log: ["query", "error", "warn", "info"],
 });
 
-app.use("/api", rootRouter());
+app.use("/api", rootRouter);
 
 app.use(errorMiddleware);
 app.listen(PORT, () => console.log("Start"));

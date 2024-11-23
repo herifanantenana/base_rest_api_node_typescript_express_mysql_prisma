@@ -4,8 +4,7 @@ import productsRouter from "./products";
 
 const rootRouter: Router = Router();
 
-export default (): Router => {
-	rootRouter.use("/auth", authRouter(rootRouter));
-	rootRouter.use("/products", productsRouter(rootRouter));
-	return rootRouter;
-};
+rootRouter.use("/auth", authRouter);
+rootRouter.use("/products", productsRouter);
+
+export default rootRouter;

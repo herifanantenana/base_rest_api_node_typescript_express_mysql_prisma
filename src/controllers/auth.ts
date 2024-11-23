@@ -23,7 +23,9 @@ export const signup = async (req: Request, res: Response) => {
 			password: hashSync(password, 15),
 		},
 	});
-	res.json(user);
+
+	const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET);
+	res.json({ user, token });
 };
 
 export const login = async (req: Request, res: Response) => {
@@ -37,8 +39,7 @@ export const login = async (req: Request, res: Response) => {
 	if (!compareSync(password, user.password))
 		throw new BadRequestsException("Incorrect password!", ErrorCode.INCORRECT_PASSWORD);
 
-	const token = jwt.sign({ userId: user.id }, JWT_SECRET);
-
+	const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET);
 	res.json({ user, token });
 };
 
