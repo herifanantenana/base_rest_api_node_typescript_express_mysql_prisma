@@ -1,5 +1,5 @@
 import { compareSync, hashSync } from "bcrypt";
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
 import * as jwt from "jsonwebtoken";
 import { prismaClient } from "..";
 import { BadRequestsException, NotFoundException } from '../exceptions/internal-exception';
@@ -7,7 +7,7 @@ import { ErrorCode } from '../exceptions/root';
 import { LoginSchema, SignupSchema } from '../schemas/users';
 import { JWT_SECRET } from "../secrets";
 
-export const signup = async (req: Request, res: Response, next: NextFunction) => {
+export const signup = async (req: Request, res: Response) => {
 	SignupSchema.parse(req.body);
 
 	const { name, email, password } = req.body;
@@ -26,7 +26,7 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
 	res.json(user);
 };
 
-export const login = async (req: Request, res: Response, next: NextFunction) => {
+export const login = async (req: Request, res: Response) => {
 	LoginSchema.parse(req.body);
 
 	const { email, password } = req.body;
@@ -43,6 +43,6 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 };
 
 
-export const me = async (req: Request, res: Response, next: NextFunction) => {
+export const me = async (req: Request, res: Response) => {
 	res.json(req.user);
 };
