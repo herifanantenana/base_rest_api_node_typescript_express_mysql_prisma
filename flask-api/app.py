@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request
 import cv2 as cv
 import numpy as np
 from src.helpers import encode_data_train
+from src.controller import facialrecognitionController
 
 app = Flask(__name__)
 FOLDER_PATH = '../public/profiles/'
@@ -18,8 +19,9 @@ def recognize():
     image = request.files['image']
     image_array = np.frombuffer(image.read(), dtype=np.uint8)
     new_image = cv.imdecode(image_array, cv.IMREAD_COLOR)
-    # encodings, file_names = ec
-    encode_data_train(FOLDER_PATH)
+    encodings, file_names  = encode_data_train(FOLDER_PATH)
+    facialrecognitionController(new_image, encodings, file_names)
+
 
     return jsonify()
 
