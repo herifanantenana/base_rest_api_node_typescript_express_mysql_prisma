@@ -1,4 +1,4 @@
-import { cartItem, Product } from "@prisma/client";
+import { CartItem, Product } from "@prisma/client";
 import { Request, Response } from "express";
 import { prismaClient } from "..";
 import { BadRequestsException, NotFoundException } from '../exceptions/internal-exception';
@@ -6,7 +6,6 @@ import { ErrorCode } from '../exceptions/root';
 import { ChangeQuantitySchema, CreateCartSchema } from '../schemas/carts';
 
 export const addItemToCart = async (req: Request, res: Response) => {
-	// todo: check if product is already in the cards
 	let validateData = CreateCartSchema.parse(req.body);
 	let product: Product;
 	try {
@@ -16,13 +15,24 @@ export const addItemToCart = async (req: Request, res: Response) => {
 	} catch (error) {
 		throw new NotFoundException("Product not found!", ErrorCode.PRODUCT_NOT_FOUND);
 	}
-	const cart = await prismaClient.cartItem.create({
-		data: {
-			userId: req.user?.id!,
-			productId: product.id,
-			quantity: validateData.quantity
-		}
-	});
+	let cart = await prismaClient.cartItem.findFirst({
+		where: { userId: req.user?.id, productId: product.id }
+	})
+	if (!cart) {
+		cart = await prismaClient.cartItem.create({
+			data: {
+				userId: req.user?.id!,
+				productId: product.id,
+				quantity: validateData.quantity
+			}
+		});
+	}
+	else {
+		cart = await prismaClient.cartItem.update({
+			where: { id: cart.id },
+			data: { quantity: validateData.quantity }
+		});
+	}
 	res.json(cart);
 }
 
@@ -35,7 +45,7 @@ export const getCart = async (req: Request, res: Response) => {
 }
 
 export const deleteItemFromCart = async (req: Request, res: Response) => {
-	let cart: cartItem;
+	let cart: CartItem;
 	try {
 		cart = await prismaClient.cartItem.findFirstOrThrow({
 			where: { id: +req.params.id }
@@ -53,7 +63,7 @@ export const deleteItemFromCart = async (req: Request, res: Response) => {
 
 export const changeQuantity = async (req: Request, res: Response) => {
 	let validateData = ChangeQuantitySchema.parse(req.body);
-	let cart: cartItem;
+	let cart: CartItem;
 	try {
 		cart = await prismaClient.cartItem.findFirstOrThrow({
 			where: { id: +req.params.id }

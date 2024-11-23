@@ -9,6 +9,15 @@ app.use(express.json());
 
 export const prismaClient = new PrismaClient({
 	log: ["query", "error", "warn", "info"],
+}).$extends({
+	result: {
+		address: {
+			formattedAddress: {
+				needs: { lineOne: true, lineTwo: true, city: true, country: true, pincode: true },
+				compute: (addr) => `${addr.lineOne}, ${addr.lineTwo}, ${addr.city}, ${addr.country}-${addr.pincode}`
+			}
+		}
+	}
 });
 
 app.use("/api", rootRouter);
