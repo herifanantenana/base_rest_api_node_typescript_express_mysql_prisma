@@ -3,6 +3,7 @@
 		"autoincrement",
 		"datasource",
 		"ecommerce",
+		"fulltext",
 		"nodenext",
 		"pincode"
 	]
