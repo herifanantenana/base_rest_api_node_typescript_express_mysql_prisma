@@ -2,8 +2,10 @@ import { Request, Response } from "express";
 import { prismaClient } from "..";
 import { NotFoundException } from '../exceptions/internal-exception';
 import { ErrorCode } from '../exceptions/root';
+import { CreateProductsSchema } from '../schemas/products';
 
 export const createProduct = async (req: Request, res: Response) => {
+	CreateProductsSchema.parse(req.body);
 
 	let product = await prismaClient.product.create({
 		data: {
@@ -17,7 +19,7 @@ export const createProduct = async (req: Request, res: Response) => {
 export const updateProduct = async (req: Request, res: Response) => {
 	try {
 		let product = req.body;
-		if (product.tags)
+		if (product?.tags)
 			product.tags = product.tags.join(',');
 		product = await prismaClient.product.update({
 			where: { id: +req.params.id },
@@ -43,8 +45,6 @@ export const deleteProduct = async (req: Request, res: Response) => {
 
 export const listProducts = async (req: Request, res: Response) => {
 	const count = await prismaClient.product.count()
-	console.log(req);
-
 	const products = await prismaClient.product.findMany({
 		skip: +req.query.skip! || 0,
 		take: +req.query.take! || count

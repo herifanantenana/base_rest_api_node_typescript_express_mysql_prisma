@@ -19,15 +19,35 @@ enum Role {
 }
 
 model User {
+    id                       Int      @id @default(autoincrement())
+    name                     String
+    email                    String   @unique
+    password                 String
+    role                     Role     @default(USER)
+    defaultShippingAddressId Int?
+    defaultBillingAddressId  Int?
+    createdAt                DateTime @default(now())
+    updatedAt                DateTime @updatedAt
+
+    addresses Address[]
+
+    @@map("users")
+}
+
+model Address {
     id        Int      @id @default(autoincrement())
-    name      String
-    email     String   @unique
-    password  String
-    role      Role     @default(USER)
+    lineOne   String
+    lineTwo   String?
+    city      String
+    country   String
+    pincode   String
+    userId    Int
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    @@map("users")
+    user User @relation(fields: [userId], references: [id])
+
+    @@map("addresses")
 }
 
 model Product {
